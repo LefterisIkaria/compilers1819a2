@@ -1,0 +1,5 @@
+a = 10111
+b = 11111
+c = 10101
+print a or (b and c)
+print a and ((b or a) xor c)
