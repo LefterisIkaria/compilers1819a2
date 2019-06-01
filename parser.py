@@ -13,23 +13,21 @@ class MyParser:
         or_operator = plex.Str('or')
         xor_operator = plex.Str('xor')
         digit = plex.Range('01')
-        ID = letter + plex.Rep(letter|num)
+        IDsymbol = letter + plex.Rep(letter|num)
         space = plex.Any(' \n\t')
-
         Keyword = plex.Str('print','PRINT')
         binary= plex.Rep1(digit)
-
         equals = plex.Str( '=')
-        
         parethensys1 = plex.Str('(')
         parethensys2 = plex.Str(')')
         self.varList={}
+        
         self.lexicon = plex.Lexicon([
             (Keyword, 'PRINT'),
             (and_operator, plex.TEXT),
             (or_operator, plex.TEXT),
             (xor_operator, plex.TEXT),
-            (ID, 'IDENTIFIER'),             #name = letter + plex.Rep(letter|digit)
+            (IDsymbol, 'IDENTIFIER'),             
             (binary, 'BIN_NUM'),
             (equals, '='),
             (parethensys1, '('),
@@ -55,82 +53,82 @@ class MyParser:
         self.stmt_list()
         
     def stmt_list(self):
-        if self.la == 'IDENTIFIER' or self.la == 'PRINT' : #first set: id,print
+        if self.la == 'IDENTIFIER' or self.la == 'PRINT' : 
             self.stmt()
             self.stmt_list()
-        elif self.la == None: #follow set: None
+        elif self.la == None: 
             return
-        else: #Error
-            raise ParseError('Expected id or print')
+        else: 
+            raise ParseError('Expected ID or print')
             
     def stmt(self):
-        if self.la == 'IDENTIFIER': #first,follow set: id,print
+        if self.la == 'IDENTIFIER': 
             varname = self.text
             self.match('IDENTIFIER')
             self.match('=')
             e = self.expr()
             self.varList[varname] = e
-        elif self.la == 'PRINT': #first,follow set: id,print
+        elif self.la == 'PRINT': 
             self.match('PRINT')
             self.expr()
-        else: #Error
-            raise ParseError('Expected id or print')
+        else: 
+            raise ParseError('Expected ID or print')
     
     def expr(self):
-        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM' : #first set: ( , id , binary number
+        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM' : 
             self.term()
             self.term_tail()
-        elif self.la == ')' or self.la == 'IDENTIFIER' or self.la == None or self.la == 'PRINT' : #follow set: ) , id , print , None
+        elif self.la == ')' or self.la == 'IDENTIFIER' or self.la == None or self.la == 'PRINT' : 
             return self.term()
-        else: #Error
-            raise ParseError('Expected parethensys,id or binary number')
+        else: 
+            raise ParseError('Expected parethensys,ID or binary number')
             
     def term_tail(self):
-        if self.la == 'xor': #first set: token xor
+        if self.la == 'xor': 
             self.match('xor')
             self.term()
             self.term_tail()
-        elif self.la == ')' or self.la == 'IDENTIFIER' or self.la == 'PRINT' or self.la == None: #follow set: ),id,print
+        elif self.la == ')' or self.la == 'IDENTIFIER' or self.la == 'PRINT' or self.la == None: 
             return
-        else: #Error
+        else: 
             raise ParseError('Expected opperation')
             
     def term(self):
-        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM': #first set: (,id,binary number
+        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM': 
             self.factor()
             self.factor_tail()
-        else: #Error
-            raise ParseError('Expected parethensys,id or binary number')
+        else: 
+            raise ParseError('Expected parethensys,ID or binary number')
             
     def factor_tail(self):
-        if self.la == 'or' : #first set: token or
+        if self.la == 'or' : 
             self.match('or')
             self.factor()
             self.factor_tail()
-        elif self.la == ')' or self.la == 'xor' or self.la == 'IDENTIFIER' or self.la == 'PRINT' or self.la == None: #follow set: ) , xor , id ,print
+        elif self.la == ')' or self.la == 'xor' or self.la == 'IDENTIFIER' or self.la == 'PRINT' or self.la == None: 
             return
-        else: #Error
+        else: 
             raise ParseError('Expected an opperation')
             
     def factor(self):
-        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM' : #first set: ( , id , binary number
+        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM' : 
             self.atom()
             self.atom_tail()
-        else: #Error
+        else: 
             raise ParseError('Expected parethensys,opperation or binary number')
             
     def atom_tail(self):
-        if self.la == 'and' : #first set: and token
+        if self.la == 'and' : 
             self.match('and')
             self.atom()
             self.atom_tail()
-        elif self.la == ')' or self.la == 'or' or self.la == 'xor' or self.la == 'IDENTIFIER' or self.la == 'PRINT' or self.la == None: #follow set: ) , or , xor , id ,print
+        elif self.la == ')' or self.la == 'or' or self.la == 'xor' or self.la == 'IDENTIFIER' or self.la == 'PRINT' or self.la == None: 
             return
-        else: #Error
+        else: 
             raise ParseError('Expected opperation')
             
     def atom(self):
-        if self.la == '(' : #first set: ( , id , binary number
+        if self.la == '(' : 
             self.match('(')
             e = self.expr()
             self.match(')')
@@ -146,7 +144,7 @@ class MyParser:
             self.match('BIN_NUM')
             return BIN_NUM
         else: #Error
-            raise ParseError('Expected parethensys, id or binary number')
+            raise ParseError('Expected parethensys, ID or binary number')
 
 parser = MyParser()
 

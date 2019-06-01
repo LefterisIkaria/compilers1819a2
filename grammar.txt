@@ -1,0 +1,9 @@
+Stmt_list -> Stmt Stmt_list | ε .
+Stmt -> id equal Expr | print Expr .
+Expr -> Term Term_tail .
+Term_tail -> xor Term Term_tail | ε .
+Term -> Factor Factor_tail .
+Factor_tail -> or Factor Factor_tail | ε .
+Factor -> Atom Atom_tail .
+Atom_tail -> and Atom Atom_tail | ε .
+Atom -> parethensis1 Expr parethensis1 | id | number .

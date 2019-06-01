@@ -1,3 +1,25 @@
+"""
+GRAMMAR
+-------------------------------------
+Stmt_list -> Stmt Stmt_list
+| .
+Stmt -> id equal Expr
+| print Expr .
+Expr -> Term Term_tail .
+Term_tail -> xor Term Term_tail
+| .
+Term -> Factor Factor_tail .
+Factor_tail -> or Factor Factor_tail
+| .
+Factor -> Atom Atom_tail .
+Atom_tail -> and Atom Atom_tail
+| .
+Atom -> parethensis1 Expr parethensis1
+| id
+| number .
+
+"""
+
 import plex
 
 class RunError(Exception):
@@ -13,7 +35,7 @@ class MyParser:
         xor_operatorop = plex.Str('xor')
         num = plex.Range('09')
         digit = plex.Range('01')
-        ID = letter + plex.Rep(letter|digit)
+        IDsymbol = letter + plex.Rep(letter|num)
         space = plex.Any(' \n\t')
         Keyword = plex.Str('print','PRINT')
         binary= plex.Rep1(digit)
@@ -26,7 +48,7 @@ class MyParser:
             (and_operatorop, plex.TEXT),
             (or_operatorop, plex.TEXT),
             (xor_operatorop, plex.TEXT),
-            (ID, 'IDENTIFIER'),             #name = letter + plex.Rep(letter|digit)
+            (IDsymbol, 'IDENTIFIER'),             #name = letter + plex.Rep(letter|digit)
             (binary, 'BIN_NUM'),
             (equals, '='),
             (parethensys1, '('),
@@ -55,16 +77,16 @@ class MyParser:
         self.stmt_list()
         
     def stmt_list(self):
-        if self.la == 'IDENTIFIER' or self.la == 'PRINT' : #first set: id,print
+        if self.la == 'IDENTIFIER' or self.la == 'PRINT' : 
             self.stmt()
             self.stmt_list()
-        elif self.la == None: #follow set: None
+        elif self.la == None: 
             return
         else: #Error
-            raise ParseError('Expected id or print')
+            raise ParseError('Expected IDsymbol or print')
             
     def stmt(self):
-        if self.la == 'IDENTIFIER': #first,follow set: id,print
+        if self.la == 'IDENTIFIER': 
             varname = self.text
             self.match('IDENTIFIER')
             self.match('=')
@@ -72,16 +94,16 @@ class MyParser:
             
             self.varList[varname] = e
             return {'type' : '=', 'text' : varname, 'expr' : e}
-        elif self.la == 'PRINT': #first,follow set: id,print
+        elif self.la == 'PRINT': 
             self.match('PRINT')
             e = self.expr()
             print('= {:b}'.format(e))
             return {'type' : 'print' , 'expr' : e}
         else: #Error
-            raise ParseError('Expected id or print')
+            raise ParseError('Expected ID or print')
     
     def expr(self):
-        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM' : #first set: ( , id , binary number
+        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM' : 
             t = self.term()
             while self.la == 'xor':
                 self.match('xor')
@@ -91,11 +113,11 @@ class MyParser:
             if self.la == ')' or self.la == 'IDENTIFIER' or self.la == 'PRINT' or self.la == None:
                 return t
             raise ParseError('Expected "xor" operator')
-        else: #Error
-            raise ParseError('Expected parethensys,id or binary number')
+        else: 
+            raise ParseError('Expected parethensys,ID or binary number')
             
     def term(self):
-        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM': #first set: (,id,binary number
+        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM': 
             f = self.factor()
             while self.la == 'or':
                 self.match('or')
@@ -105,11 +127,11 @@ class MyParser:
             if self.la == ')' or self.la == 'xor' or self.la == 'IDENTIFIER' or self.la == 'PRINT' or self.la == None:
                 return f
             raise ParseError('Expected "or" operator')
-        else: #Error
-            raise ParseError('Expected parethensys, id or binary number')
+        else: 
+            raise ParseError('Expected parethensys, ID or binary number')
             
     def factor(self):
-        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM' : #first set: ( , id , binary number
+        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM' : 
             a = self.atom()
             while self.la == 'and':
                 self.match('and')
@@ -119,11 +141,11 @@ class MyParser:
             if self.la == ')' or self.la == 'or' or self.la == 'xor' or self.la == 'IDENTIFIER' or self.la == 'PRINT' or self.la == None:
                 return a
             raise ParseError('Expected "and" operator')
-        else: #Error
+        else: 
             raise ParseError('Expected parethensys, opperation or binary number')
             
     def atom(self):
-        if self.la == '(' : #first set: ( , id , binary number
+        if self.la == '(' : 
             self.match('(')
             e = self.expr()
             self.match(')')
@@ -138,8 +160,8 @@ class MyParser:
             BIN_NUM = int(self.text,2)
             self.match('BIN_NUM')
             return (BIN_NUM)
-        else: #Error
-            raise ParseError('Expected parethensys, id or binary number')
+        else: 
+            raise ParseError('Expected parethensys, ID or binary number')
     
 parser = MyParser()
 
