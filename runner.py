@@ -53,13 +53,13 @@ class MyParser:
             (equals, '='),
             (parethensys1, '('),
             (parethensys2, ')'),
-            (space, plex.IGNORE)			
+            (space, plex.IGNORE)
         ])
 
     def createScanner(self,fp):
         self.scanner = plex.Scanner(self.lexicon,fp)
         self.la,self.text = self.next_token()
-    
+
     def next_token(self):
         return self.scanner.read()
 
@@ -70,40 +70,40 @@ class MyParser:
             self.la,self.text=self.next_token()
         else:
             raise ParseError("found {} instead of {}".format(self.la,token))
-            
+
 
     def parse(self,fp):
         self.createScanner(fp)
         self.stmt_list()
-        
+
     def stmt_list(self):
-        if self.la == 'IDENTIFIER' or self.la == 'PRINT' : 
+        if self.la == 'IDENTIFIER' or self.la == 'PRINT' :
             self.stmt()
             self.stmt_list()
-        elif self.la == None: 
+        elif self.la == None:
             return
         else: #Error
-            raise ParseError('Expected IDsymbol or print')
-            
+            raise ParseError('Expected ID or print')
+
     def stmt(self):
-        if self.la == 'IDENTIFIER': 
+        if self.la == 'IDENTIFIER':
             varname = self.text
             self.match('IDENTIFIER')
             self.match('=')
             e = self.expr()
-            
+
             self.varList[varname] = e
             return {'type' : '=', 'text' : varname, 'expr' : e}
-        elif self.la == 'PRINT': 
+        elif self.la == 'PRINT':
             self.match('PRINT')
             e = self.expr()
             print('= {:b}'.format(e))
             return {'type' : 'print' , 'expr' : e}
         else: #Error
             raise ParseError('Expected ID or print')
-    
+
     def expr(self):
-        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM' : 
+        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM' :
             t = self.term()
             while self.la == 'xor':
                 self.match('xor')
@@ -113,11 +113,11 @@ class MyParser:
             if self.la == ')' or self.la == 'IDENTIFIER' or self.la == 'PRINT' or self.la == None:
                 return t
             raise ParseError('Expected "xor" operator')
-        else: 
+        else:
             raise ParseError('Expected parethensys,ID or binary number')
-            
+
     def term(self):
-        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM': 
+        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM':
             f = self.factor()
             while self.la == 'or':
                 self.match('or')
@@ -127,11 +127,11 @@ class MyParser:
             if self.la == ')' or self.la == 'xor' or self.la == 'IDENTIFIER' or self.la == 'PRINT' or self.la == None:
                 return f
             raise ParseError('Expected "or" operator')
-        else: 
+        else:
             raise ParseError('Expected parethensys, ID or binary number')
-            
+
     def factor(self):
-        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM' : 
+        if self.la == '(' or self.la == 'IDENTIFIER' or self.la == 'BIN_NUM' :
             a = self.atom()
             while self.la == 'and':
                 self.match('and')
@@ -141,11 +141,11 @@ class MyParser:
             if self.la == ')' or self.la == 'or' or self.la == 'xor' or self.la == 'IDENTIFIER' or self.la == 'PRINT' or self.la == None:
                 return a
             raise ParseError('Expected "and" operator')
-        else: 
+        else:
             raise ParseError('Expected parethensys, opperation or binary number')
-            
+
     def atom(self):
-        if self.la == '(' : 
+        if self.la == '(' :
             self.match('(')
             e = self.expr()
             self.match(')')
@@ -160,9 +160,9 @@ class MyParser:
             BIN_NUM = int(self.text,2)
             self.match('BIN_NUM')
             return (BIN_NUM)
-        else: 
+        else:
             raise ParseError('Expected parethensys, ID or binary number')
-    
+
 parser = MyParser()
 
 with open('input.txt', 'r') as fp:
